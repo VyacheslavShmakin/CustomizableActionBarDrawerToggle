@@ -1,9 +1,33 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'customizable-actionbar-drawer-toggle'
+
+    publishedGroupId = 'ru.shmakinv.android.widget.customizableactionbardrawertoggle'
+    libraryName = 'CustomizableActionBarDrawerToggle'
+    artifact = 'actionbar-drawer-toggle'
+
+    libraryDescription = 'Extended ActionBarDrawerToggle for Material styled toolbar'
+
+    siteUrl = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle'
+    gitUrl = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle.git'
+
+    libraryVersion = '1.0.0'
+
+    developerId = 'vshmakin'
+    developerName = 'Vyacheslav Shmakin'
+    developerEmail = 'vyacheslav.shmakin@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 android {
     compileSdkVersion 22
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         minSdkVersion 14
