@@ -17,7 +17,6 @@
 
 package ru.shmakinv.android.widget.customizableactionbardrawertoggle;
 
-import android.R;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -55,7 +54,7 @@ class ActionBarDrawerToggleHoneycomb {
     @SuppressLint("LongLogTag")
     public static SetIndicatorInfo setActionBarUpIndicator(SetIndicatorInfo info, Activity activity,
             Drawable drawable, int contentDescRes) {
-        if (true || info == null) {
+        if (info == null) {
             info = new SetIndicatorInfo(activity);
         }
         if (info.setHomeAsUpIndicator != null) {

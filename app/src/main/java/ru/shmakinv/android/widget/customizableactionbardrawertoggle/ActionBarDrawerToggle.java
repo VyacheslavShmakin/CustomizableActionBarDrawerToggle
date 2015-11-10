@@ -52,7 +52,7 @@ import android.view.View;
  *
  * <p>
  * You can customize the the animated toggle by defining the
- * {@link android.support.v7.appcompat.R.styleable#DrawerArrowToggle drawerArrowStyle} in your
+ * {android.support.v7.appcompat.R.styleable#DrawerArrowToggle drawerArrowStyle} in your
  * ActionBar theme.
  */
 public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
@@ -117,7 +117,7 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     private final float mSliderStartPosition = 0.0F;
     private final float mSliderEndPosition = 1.0F;
 
-    private DrawerToggle mSlider;
+    private final DrawerToggle mSlider;
     private Drawable mHomeAsUpIndicator;
     private boolean mDrawerIndicatorEnabled = true;
     private boolean mHasCustomUpIndicator;

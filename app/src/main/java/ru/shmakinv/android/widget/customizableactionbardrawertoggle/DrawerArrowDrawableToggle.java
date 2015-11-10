@@ -21,7 +21,7 @@ class DrawerArrowDrawableToggle extends DrawerArrowDrawable implements
     }
 
     protected boolean isLayoutRtl() {
-        return ViewCompat.getLayoutDirection(this.mActivity.getWindow().getDecorView()) == 1;
+        return ViewCompat.getLayoutDirection(this.mActivity.getWindow().getDecorView()) == ViewCompat.LAYOUT_DIRECTION_RTL;
     }
 
     public float getPosition() {
