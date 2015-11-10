@@ -1,37 +1,13 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'customizable-actionbar-drawer-toggle'
-
-    publishedGroupId = 'ru.shmakinv.android.widget.customizableactionbardrawertoggle'
-    libraryName = 'CustomizableActionBarDrawerToggle'
-    artifact = 'actionbar-drawer-toggle'
-
-    libraryDescription = 'Extended ActionBarDrawerToggle for Material styled toolbar'
-
-    siteUrl = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle'
-    gitUrl = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle.git'
-
-    libraryVersion = '1.0.0'
-
-    developerId = 'vshmakin'
-    developerName = 'Vyacheslav Shmakin'
-    developerEmail = 'vyacheslav.shmakin@gmail.com'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
+apply plugin: 'com.novoda.bintray-release'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
@@ -41,9 +17,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:appcompat-v7:23.1.0'
+}
+
+publish {
+    groupId = 'com.github.VyacheslavShmakin'
+    artifactId = 'customizable-actionbar-drawer-toggle'
+    publishVersion = '1.0'
+    desc = 'A small library that extends default ActionBarDrawerToggle of Android'
+    licences = ['Apache 2.0']
+    website = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle'
 }
