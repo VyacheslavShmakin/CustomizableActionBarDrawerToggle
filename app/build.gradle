@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.1"
     }
     buildTypes {
         release {
@@ -31,7 +31,7 @@ dependencies {
 publish {
     groupId = 'com.github.VyacheslavShmakin'
     artifactId = 'customizable-actionbar-drawer-toggle'
-    publishVersion = '1.0'
+    publishVersion = '1.0.1'
     desc = 'A small library that extends default ActionBarDrawerToggle of Android'
     licences = ['Apache 2.0']
     website = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle'

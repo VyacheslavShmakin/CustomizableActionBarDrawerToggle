@@ -264,6 +264,13 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
         }
     }
 
+    public void onSavedInstanceState(Bundle bundle) {
+        bundle.putInt(DRAWER_POSITION_INSTANCE, Math.round(mSlider.getPosition()));
+        bundle.putInt(INTERPOLATOR_DURATION_INSTANCE, mInterpolatorDuration);
+        bundle.putBoolean(ROTATE_DIRECTION_BACK_INSTANCE, mRotateDirectionBack);
+        bundle.putBoolean(AUTO_RESET_ROTATE_DIRECTION_INSTANCE, mAutoResetRotateDirection);
+    }
+
     /**
      * This method should always be called by your <code>Activity</code>'s
      * {@link Activity#onConfigurationChanged(android.content.res.Configuration)
