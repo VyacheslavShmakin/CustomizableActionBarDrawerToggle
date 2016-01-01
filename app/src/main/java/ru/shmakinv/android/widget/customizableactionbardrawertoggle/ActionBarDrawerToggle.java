@@ -123,8 +123,10 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     private boolean mHasCustomUpIndicator;
     private final int mOpenDrawerContentDescRes;
     private final int mCloseDrawerContentDescRes;
+
     // used in toolbar mode when DrawerToggle is disabled
-    private View.OnClickListener mToolbarNavigationClickListener;
+    private ToolbarNavigationClickListener mToolbarNavigationClickListener;
+
     // If developer does not set displayHomeAsUp, DrawerToggle won't show up.
     // DrawerToggle logs a warning if this case is detected
     private boolean mWarnedForDisplayHomeAsUp = false;
@@ -208,10 +210,15 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mDrawerIndicatorEnabled) {
-                        toggle();
-                    } else if (mToolbarNavigationClickListener != null) {
-                        mToolbarNavigationClickListener.onClick(v);
+                    boolean toggle = true;
+                    if (mToolbarNavigationClickListener != null) {
+                        toggle = mToolbarNavigationClickListener.onClick(v);
+                    }
+
+                    if (toggle) {
+                        if (mDrawerIndicatorEnabled) {
+                            toggle();
+                        }
                     }
                 }
             });
@@ -229,7 +236,8 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
         mOpenDrawerContentDescRes = openDrawerContentDescRes;
         mCloseDrawerContentDescRes = closeDrawerContentDescRes;
         if (slider == null) {
-            mSlider = new DrawerArrowDrawableToggle(activity, mActivityImpl.getActionBarThemedContext());
+            Context context = mActivityImpl != null ? mActivityImpl.getActionBarThemedContext() : null;
+            mSlider = new DrawerArrowDrawableToggle(context);
         } else {
             mSlider = slider;
         }
@@ -534,11 +542,12 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      *
      * @return The click listener which receives Navigation click events from Toolbar when
      * drawer indicator is disabled.
-     * @see #setToolbarNavigationClickListener(android.view.View.OnClickListener)
+     * @see #setToolbarNavigationClickListener
+     * (ru.shmakinv.android.widget.customizableactionbardrawertoggle.ToolbarNavigationClickListener)
      * @see #setDrawerIndicatorEnabled(boolean)
      * @see #isDrawerIndicatorEnabled()
      */
-    public View.OnClickListener getToolbarNavigationClickListener() {
+    public ToolbarNavigationClickListener getToolbarNavigationClickListener() {
         return mToolbarNavigationClickListener;
     }
 
@@ -551,9 +560,8 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      *
      * @see #setDrawerIndicatorEnabled(boolean)
      */
-    public void setToolbarNavigationClickListener(
-            View.OnClickListener onToolbarNavigationClickListener) {
-        mToolbarNavigationClickListener = onToolbarNavigationClickListener;
+    public void setToolbarNavigationClickListener(ToolbarNavigationClickListener listener) {
+        mToolbarNavigationClickListener = listener;
     }
 
     void setActionBarUpIndicator(Drawable upDrawable, int contentDescRes) {
@@ -573,11 +581,9 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     }
 
     static class DrawerArrowDrawableToggle extends DrawerArrowDrawable implements DrawerToggle {
-        private final Activity mActivity;
 
-        public DrawerArrowDrawableToggle(Activity activity, Context themedContext) {
+        public DrawerArrowDrawableToggle(Context themedContext) {
             super(themedContext);
-            mActivity = activity;
         }
 
         public void setPosition(float position, int imageState) {
