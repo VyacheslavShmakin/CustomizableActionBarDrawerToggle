@@ -7,7 +7,7 @@ Download
 Gradle:
 
 ```groovy
-compile 'com.github.VyacheslavShmakin.customizable-actionbar-drawer-toggle:1.0.2'
+compile 'com.github.VyacheslavShmakin:customizable-actionbar-drawer-toggle:1.0.2'
 ```
 
 Maven:
