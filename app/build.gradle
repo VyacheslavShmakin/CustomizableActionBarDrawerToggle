@@ -1,14 +1,15 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 23
-        versionCode 4
-        versionName "1.0.2"
+        targetSdkVersion 25
+        versionCode 5
+        versionName "1.0.3"
     }
     buildTypes {
         release {
@@ -23,6 +24,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+}
+
+publish {
+    groupId = 'com.github.VyacheslavShmakin'
+    artifactId = 'customizable-actionbar-drawer-toggle'
+    publishVersion = '1.0.3'
+    desc = 'A small library that extends default ActionBarDrawerToggle of Android'
+    licences = ['Apache 2.0']
+    website = 'https://github.com/VyacheslavShmakin/CustomizableActionBarDrawerToggle'
 }

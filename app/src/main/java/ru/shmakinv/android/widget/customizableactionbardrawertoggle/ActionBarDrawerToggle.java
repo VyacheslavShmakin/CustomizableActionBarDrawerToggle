@@ -1,7 +1,19 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2017 Vyacheslav Shmakin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package ru.shmakinv.android.widget.customizableactionbardrawertoggle;
 
@@ -16,11 +28,12 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -30,26 +43,26 @@ import android.view.View;
  * This class provides a handy way to tie together the functionality of
  * {@link android.support.v4.widget.DrawerLayout} and the framework <code>ActionBar</code> to
  * implement the recommended design for navigation drawers.
- *
+ * <p>
  * <p>To use <code>ActionBarDrawerToggle</code>, create one in your Activity and call through
  * to the following methods corresponding to your Activity callbacks:</p>
- *
+ * <p>
  * <ul>
  * <li>{@link android.app.Activity#onConfigurationChanged(android.content.res.Configuration)
  * onConfigurationChanged}
  * <li>{@link android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
  * onOptionsItemSelected}</li>
  * </ul>
- *
+ * <p>
  * <p>Call {@link #syncState(Bundle savedInstanceState)} from your <code>Activity</code>'s
  * {@link android.app.Activity#onPostCreate(android.os.Bundle) onPostCreate} to synchronize the
  * indicator with the state of the linked DrawerLayout after <code>onRestoreInstanceState</code>
  * has occurred.</p>
- *
+ * <p>
  * <p><code>ActionBarDrawerToggle</code> can be used directly as a
  * {@link android.support.v4.widget.DrawerLayout.DrawerListener}, or if you are already providing
  * your own listener, call through to each of the listener methods from your own.</p>
- *
+ * <p>
  * <p>
  * You can customize the the animated toggle by defining the
  * {android.support.v7.appcompat.R.styleable#DrawerArrowToggle drawerArrowStyle} in your
@@ -105,23 +118,29 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
         boolean isNavigationVisible();
     }
 
-    private static final String DRAWER_POSITION_INSTANCE = "LastDrawerPositionInstance";
-    private static final String INTERPOLATOR_DURATION_INSTANCE = "InterpolatorDurationInstance";
-    private static final String ROTATE_DIRECTION_BACK_INSTANCE = "RotateDirectionBackInstance";
-    private static final String AUTO_RESET_ROTATE_DIRECTION_INSTANCE = "AutoResetRotateDirectionInstance";
+    private static final String KEY_DRAWER_POSITION = "LastDrawerPositionInstance";
+    private static final String KEY_INTERPOLATOR_DURATION = "InterpolatorDurationInstance";
+    private static final String KEY_ROTATE_DIRECTION = "RotateDirectionBackInstance";
+    private static final String KEY_AUTO_RESET_ROTATE_DIRECTION = "AutoResetRotateDirectionInstance";
     private static final String TAG = "ActionBarDrawerToggle";
     private static final String MESSAGE_NAV_ICON_NOT_VISIBLE = "DrawerToggle may not show up " +
             "because NavigationIcon is not visible. You may need to call actionbar.setDisplayHomeAsUpEnabled(true);";
+
+    private static final float SLIDER_START_POSITION = 0.0F;
+    private static final float SLIDER_END_POSITION = 1.0F;
+
     private final Delegate mActivityImpl;
     private final DrawerLayout mDrawerLayout;
-    private final float mSliderStartPosition = 0.0F;
-    private final float mSliderEndPosition = 1.0F;
 
-    private final DrawerToggle mSlider;
+    private DrawerArrowDrawableCompat mSlider;
     private Drawable mHomeAsUpIndicator;
     private boolean mDrawerIndicatorEnabled = true;
+    private boolean mDrawerSlideAnimationEnabled = true;
     private boolean mHasCustomUpIndicator;
+
+    @StringRes
     private final int mOpenDrawerContentDescRes;
+    @StringRes
     private final int mCloseDrawerContentDescRes;
 
     // used in toolbar mode when DrawerToggle is disabled
@@ -138,12 +157,12 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
 
     /**
      * Construct a new ActionBarDrawerToggle.
-     *
+     * <p>
      * <p>The given {@link Activity} will be linked to the specified {@link DrawerLayout} and
      * its Actionbar's Up button will be set to a custom drawable.
      * <p>This drawable shows a Hamburger icon when drawer is closed and an arrow when drawer
      * is open. It animates between these two states as the drawer opens.</p>
-     *
+     * <p>
      * <p>String resources must be provided to describe the open/close drawer actions for
      * accessibility services.</p>
      *
@@ -197,28 +216,18 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      * the
      * animation.
      */
-    <T extends Drawable & DrawerToggle> ActionBarDrawerToggle(Activity activity, Toolbar toolbar,
-                                                              DrawerLayout drawerLayout, T slider,
-                                                              @StringRes int openDrawerContentDescRes,
-                                                              @StringRes int closeDrawerContentDescRes) {
-
-        this.mDrawerIndicatorEnabled = true;
-        this.mWarnedForDisplayHomeAsUp = false;
-
+    public ActionBarDrawerToggle(Activity activity, Toolbar toolbar, DrawerLayout drawerLayout,
+                                 DrawerArrowDrawableCompat slider, @StringRes int openDrawerContentDescRes,
+                                 @StringRes int closeDrawerContentDescRes) {
         if (toolbar != null) {
             mActivityImpl = new ToolbarCompatDelegate(toolbar);
             toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    boolean toggle = true;
-                    if (mToolbarNavigationClickListener != null) {
-                        toggle = mToolbarNavigationClickListener.onClick(v);
-                    }
-
-                    if (toggle) {
-                        if (mDrawerIndicatorEnabled) {
-                            toggle();
-                        }
+                    if (mDrawerIndicatorEnabled) {
+                        toggle();
+                    } else if (mToolbarNavigationClickListener != null) {
+                        mToolbarNavigationClickListener.onClick(v);
                     }
                 }
             });
@@ -226,8 +235,8 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
             mActivityImpl = ((DelegateProvider) activity).getDrawerToggleDelegate();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             mActivityImpl = new JellybeanMr2Delegate(activity);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mActivityImpl = new HoneycombDelegate(activity);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            mActivityImpl = new IcsDelegate(activity);
         } else {
             mActivityImpl = new DummyDelegate(activity);
         }
@@ -235,9 +244,8 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
         mDrawerLayout = drawerLayout;
         mOpenDrawerContentDescRes = openDrawerContentDescRes;
         mCloseDrawerContentDescRes = closeDrawerContentDescRes;
-        if (slider == null) {
-            Context context = mActivityImpl != null ? mActivityImpl.getActionBarThemedContext() : null;
-            mSlider = new DrawerArrowDrawableToggle(context);
+        if (slider == null && mActivityImpl != null) {
+            mSlider = new DrawerArrowDrawableCompat(mActivityImpl.getActionBarThemedContext());
         } else {
             mSlider = slider;
         }
@@ -247,36 +255,36 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
 
     /**
      * Synchronize the state of the drawer indicator/affordance with the linked DrawerLayout.
-     *
+     * <p>
      * <p>This should be called from your <code>Activity</code>'s
      * {@link Activity#onPostCreate(android.os.Bundle) onPostCreate} method to synchronize after
      * the DrawerLayout's instance state has been restored, and any other time when the state
      * may have diverged in such a way that the ActionBarDrawerToggle was not notified.
      * (For example, if you stop forwarding appropriate drawer events for a period of time.)</p>
      */
-    public void syncState(Bundle savedInstanceState) {
-        float position = mSliderStartPosition;
+    public void syncState(@Nullable Bundle savedInstanceState) {
+        float position = SLIDER_START_POSITION;
         if (savedInstanceState != null) {
-            position = (float) savedInstanceState.getInt(DRAWER_POSITION_INSTANCE);
-            mInterpolatorDuration = savedInstanceState.getInt(INTERPOLATOR_DURATION_INSTANCE);
-            mRotateDirectionBack = savedInstanceState.getBoolean(ROTATE_DIRECTION_BACK_INSTANCE);
-            mAutoResetRotateDirection = savedInstanceState.getBoolean(AUTO_RESET_ROTATE_DIRECTION_INSTANCE);
+            position = (float) savedInstanceState.getInt(KEY_DRAWER_POSITION);
+            mInterpolatorDuration = savedInstanceState.getInt(KEY_INTERPOLATOR_DURATION);
+            mRotateDirectionBack = savedInstanceState.getBoolean(KEY_ROTATE_DIRECTION);
+            mAutoResetRotateDirection = savedInstanceState.getBoolean(KEY_AUTO_RESET_ROTATE_DIRECTION);
         }
 
         this.mSlider.setPosition(position, DrawerImageState.TOGGLE_DRAWER_DEFAULT);
 
         if (this.mDrawerIndicatorEnabled) {
-            this.setActionBarUpIndicator((Drawable) mSlider,
+            this.setActionBarUpIndicator(mSlider,
                     mDrawerLayout.isDrawerOpen(GravityCompat.START) ?
                             mCloseDrawerContentDescRes : mOpenDrawerContentDescRes);
         }
     }
 
     public void onSavedInstanceState(Bundle bundle) {
-        bundle.putInt(DRAWER_POSITION_INSTANCE, Math.round(mSlider.getPosition()));
-        bundle.putInt(INTERPOLATOR_DURATION_INSTANCE, mInterpolatorDuration);
-        bundle.putBoolean(ROTATE_DIRECTION_BACK_INSTANCE, mRotateDirectionBack);
-        bundle.putBoolean(AUTO_RESET_ROTATE_DIRECTION_INSTANCE, mAutoResetRotateDirection);
+        bundle.putInt(KEY_DRAWER_POSITION, Math.round(mSlider.getPosition()));
+        bundle.putInt(KEY_INTERPOLATOR_DURATION, mInterpolatorDuration);
+        bundle.putBoolean(KEY_ROTATE_DIRECTION, mRotateDirectionBack);
+        bundle.putBoolean(KEY_AUTO_RESET_ROTATE_DIRECTION, mAutoResetRotateDirection);
     }
 
     /**
@@ -313,9 +321,11 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     }
 
     private void toggle() {
-        if (mDrawerLayout.isDrawerVisible(GravityCompat.START)) {
+        int drawerLockMode = mDrawerLayout.getDrawerLockMode(GravityCompat.START);
+        if (mDrawerLayout.isDrawerVisible(GravityCompat.START)
+                && (drawerLockMode != DrawerLayout.LOCK_MODE_LOCKED_OPEN)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else {
+        } else if (drawerLockMode != DrawerLayout.LOCK_MODE_LOCKED_CLOSED) {
             mDrawerLayout.openDrawer(GravityCompat.START);
         }
     }
@@ -406,7 +416,7 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
 
     /**
      * Enable or disable the drawer indicator. The indicator defaults to enabled.
-     *
+     * <p>
      * <p>When the indicator is disabled, the <code>ActionBar</code> will revert to displaying
      * the home-as-up indicator provided by the <code>Activity</code>'s theme in the
      * <code>android.R.attr.homeAsUpIndicator</code> attribute instead of the animated
@@ -417,14 +427,34 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     public void setDrawerIndicatorEnabled(boolean enable) {
         if (enable != mDrawerIndicatorEnabled) {
             if (enable) {
-                setActionBarUpIndicator((Drawable) mSlider,
-                        mDrawerLayout.isDrawerOpen(GravityCompat.START) ?
-                                mCloseDrawerContentDescRes : mOpenDrawerContentDescRes);
+                setActionBarUpIndicator(
+                        mSlider,
+                        mDrawerLayout.isDrawerOpen(GravityCompat.START)
+                                ? mCloseDrawerContentDescRes
+                                : mOpenDrawerContentDescRes);
             } else {
                 setActionBarUpIndicator(mHomeAsUpIndicator, 0);
             }
             mDrawerIndicatorEnabled = enable;
         }
+    }
+
+    /**
+     * @return DrawerArrowDrawable that is currently shown by the ActionBarDrawerToggle.
+     */
+    @NonNull
+    public DrawerArrowDrawableCompat getDrawerArrowDrawable() {
+        return mSlider;
+    }
+
+    /**
+     * Sets the DrawerArrowDrawableCompat that should be shown by this ActionBarDrawerToggle.
+     *
+     * @param drawable DrawerArrowDrawableCompat that should be shown by this ActionBarDrawerToggle
+     */
+    public void setDrawerArrowDrawable(@NonNull DrawerArrowDrawableCompat drawable) {
+        mSlider = drawable;
+        syncState(null);
     }
 
     public void toggleIndicator(final boolean backDirection) {
@@ -433,12 +463,12 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
 
         float position = Math.round(this.mSlider.getPosition());
         float start, end;
-        if (position == mSliderStartPosition) {
-            start = mSliderStartPosition;
-            end = mSliderEndPosition;
+        if (position == SLIDER_START_POSITION) {
+            start = SLIDER_START_POSITION;
+            end = SLIDER_END_POSITION;
         } else {
-            start = mSliderEndPosition;
-            end = mSliderStartPosition;
+            start = SLIDER_END_POSITION;
+            end = SLIDER_START_POSITION;
         }
 
         animateDrawer(start, end);
@@ -464,6 +494,25 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     }
 
     /**
+     * Specifies whether the drawer arrow should animate when the drawer position changes.
+     *
+     * @param enabled if this is {@code true} then the animation will run, else it will be skipped
+     */
+    public void setDrawerSlideAnimationEnabled(boolean enabled) {
+        mDrawerSlideAnimationEnabled = enabled;
+        if (!enabled) {
+            setPosition(SLIDER_START_POSITION);
+        }
+    }
+
+    /**
+     * @return whether the drawer slide animation is enabled
+     */
+    public boolean isDrawerSlideAnimationEnabled() {
+        return mDrawerSlideAnimationEnabled;
+    }
+
+    /**
      * {@link DrawerLayout.DrawerListener} callback method. If you do not use your
      * ActionBarDrawerToggle instance directly as your DrawerLayout's listener, you should call
      * through to this method from your own listener object.
@@ -473,30 +522,15 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      */
     @Override
     public void onDrawerSlide(View drawerView, float slideOffset) {
-        setPosition(slideOffset);
-    }
-
-    private void setPosition(float slideOffset) {
-        float position = Math.min(mSliderEndPosition, Math.max(mSliderStartPosition, slideOffset));
-        int mirrored = DrawerImageState.TOGGLE_DRAWER_DEFAULT;
-
-        if (mRotateDirectionBack) {
-            mirrored = DrawerImageState.TOGGLE_DRAWER_MIRRORED;
+        if (mDrawerSlideAnimationEnabled) {
+            setPosition(slideOffset);
         } else {
-            if (position == mSliderStartPosition) {
-                mirrored = DrawerImageState.TOGGLE_DRAWER_NORMAL;
-            } else if (position == mSliderEndPosition) {
-                mirrored = DrawerImageState.TOGGLE_DRAWER_MIRRORED;
-            }
-        }
-
-        this.mSlider.setPosition(position, mirrored);
-        if (mAutoResetRotateDirection && mRotateDirectionBack && position == mSliderEndPosition) {
-            mRotateDirectionBack = !mRotateDirectionBack;
+            setPosition(SLIDER_START_POSITION); // disable animation.
         }
     }
 
-    /**mSliderEndPosition, DrawerImageState.TOGGLE_DRAWER_DEFAULT
+    /**
+     * SLIDER_END_POSITION, DrawerImageState.TOGGLE_DRAWER_DEFAULT
      * {@link DrawerLayout.DrawerListener} callback method. If you do not use your
      * ActionBarDrawerToggle instance directly as your DrawerLayout's listener, you should call
      * through to this method from your own listener object.
@@ -505,7 +539,7 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      */
     @Override
     public void onDrawerOpened(View drawerView) {
-        mSlider.setPosition(mSliderEndPosition, DrawerImageState.TOGGLE_DRAWER_DEFAULT);
+        setPosition(SLIDER_END_POSITION);
         if (mDrawerIndicatorEnabled) {
             setActionBarDescription(mCloseDrawerContentDescRes);
         }
@@ -520,7 +554,7 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      */
     @Override
     public void onDrawerClosed(View drawerView) {
-        mSlider.setPosition(mSliderStartPosition, DrawerImageState.TOGGLE_DRAWER_DEFAULT);
+        setPosition(SLIDER_START_POSITION);
         if (mDrawerIndicatorEnabled) {
             setActionBarDescription(mOpenDrawerContentDescRes);
         }
@@ -542,8 +576,7 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      *
      * @return The click listener which receives Navigation click events from Toolbar when
      * drawer indicator is disabled.
-     * @see #setToolbarNavigationClickListener
-     * (ru.shmakinv.android.widget.customizableactionbardrawertoggle.ToolbarNavigationClickListener)
+     * @see #setToolbarNavigationClickListener(ToolbarNavigationClickListener)
      * @see #setDrawerIndicatorEnabled(boolean)
      * @see #isDrawerIndicatorEnabled()
      */
@@ -560,8 +593,8 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      *
      * @see #setDrawerIndicatorEnabled(boolean)
      */
-    public void setToolbarNavigationClickListener(ToolbarNavigationClickListener listener) {
-        mToolbarNavigationClickListener = listener;
+    public void setToolbarNavigationClickListener(ToolbarNavigationClickListener onClickListener) {
+        mToolbarNavigationClickListener = onClickListener;
     }
 
     void setActionBarUpIndicator(Drawable upDrawable, int contentDescRes) {
@@ -580,46 +613,37 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
         return mActivityImpl.getThemeUpIndicator();
     }
 
-    static class DrawerArrowDrawableToggle extends DrawerArrowDrawable implements DrawerToggle {
+    private void setPosition(float slideOffset) {
+        float position = Math.min(SLIDER_END_POSITION, Math.max(SLIDER_START_POSITION, slideOffset));
+        int mirrored = DrawerImageState.TOGGLE_DRAWER_DEFAULT;
 
-        public DrawerArrowDrawableToggle(Context themedContext) {
-            super(themedContext);
-        }
-
-        public void setPosition(float position, int imageState) {
-            if (imageState == DrawerImageState.TOGGLE_DRAWER_MIRRORED) {
-                this.setVerticalMirror(true);
-            } else if (imageState == DrawerImageState.TOGGLE_DRAWER_NORMAL) {
-                this.setVerticalMirror(false);
+        if (mRotateDirectionBack) {
+            mirrored = DrawerImageState.TOGGLE_DRAWER_MIRRORED;
+        } else {
+            if (position == SLIDER_START_POSITION) {
+                mirrored = DrawerImageState.TOGGLE_DRAWER_NORMAL;
+            } else if (position == SLIDER_END_POSITION) {
+                mirrored = DrawerImageState.TOGGLE_DRAWER_MIRRORED;
             }
-
-            super.setProgress(position);
         }
 
-        public float getPosition() {
-            return getProgress();
+        this.mSlider.setPosition(position, mirrored);
+        if (mAutoResetRotateDirection && mRotateDirectionBack && position == SLIDER_END_POSITION) {
+            mRotateDirectionBack = !mRotateDirectionBack;
         }
     }
 
     /**
-     * Interface for toggle drawables. Can be public in the future
+     * Delegate if SDK version is between ICS and JBMR2
      */
-    interface DrawerToggle {
-
-        void setPosition(float position, int toggleImageState);
-
-        float getPosition();
-    }
-
-    /**
-     * Delegate if SDK version is between honeycomb and JBMR2
-     */
-    private static class HoneycombDelegate implements Delegate {
+    @RequiresApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    private static class IcsDelegate implements Delegate {
 
         final Activity mActivity;
         ActionBarDrawerToggleHoneycomb.SetIndicatorInfo mSetIndicatorInfo;
 
-        private HoneycombDelegate(Activity activity) {
+        IcsDelegate(Activity activity) {
             mActivity = activity;
         }
 
@@ -649,10 +673,17 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
 
         @Override
         public void setActionBarUpIndicator(Drawable themeImage, int contentDescRes) {
-            mActivity.getActionBar().setDisplayShowHomeEnabled(true);
-            mSetIndicatorInfo = ActionBarDrawerToggleHoneycomb.setActionBarUpIndicator(
-                    mSetIndicatorInfo, mActivity, themeImage, contentDescRes);
-            mActivity.getActionBar().setDisplayShowHomeEnabled(false);
+            final ActionBar actionBar = mActivity.getActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayShowHomeEnabled(true);
+                mSetIndicatorInfo = ActionBarDrawerToggleHoneycomb.setActionBarUpIndicator(
+                        mSetIndicatorInfo,
+                        mActivity,
+                        themeImage,
+                        contentDescRes);
+
+                actionBar.setDisplayShowHomeEnabled(false);
+            }
         }
 
         @Override
@@ -665,11 +696,13 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
     /**
      * Delegate if SDK version is JB MR2 or newer
      */
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static class JellybeanMr2Delegate implements Delegate {
 
         final Activity mActivity;
 
-        private JellybeanMr2Delegate(Activity activity) {
+        JellybeanMr2Delegate(Activity activity) {
             mActivity = activity;
         }
 
@@ -701,7 +734,6 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
                     (actionBar.getDisplayOptions() & ActionBar.DISPLAY_HOME_AS_UP) != 0;
         }
 
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
         @Override
         public void setActionBarUpIndicator(Drawable drawable, int contentDescRes) {
             final ActionBar actionBar = mActivity.getActionBar();
@@ -711,7 +743,6 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
             }
         }
 
-        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
         @Override
         public void setActionBarDescription(int contentDescRes) {
             final ActionBar actionBar = mActivity.getActionBar();
