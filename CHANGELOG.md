@@ -1,5 +1,12 @@
 Change Log
 ==========
+## Version 1.0.4
+
+_2017-11-12_
+
+ * Bumped AppCompatLibrary.
+ 
+ 
 ## Version 1.0.3
 
 _2017-04-18_

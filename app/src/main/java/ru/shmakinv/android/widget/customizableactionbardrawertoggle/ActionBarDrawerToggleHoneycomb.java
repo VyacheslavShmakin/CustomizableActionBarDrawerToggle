@@ -83,7 +83,7 @@ class ActionBarDrawerToggleHoneycomb {
             try {
                 final ActionBar actionBar = activity.getActionBar();
                 info.setHomeActionContentDescription.invoke(actionBar, contentDescRes);
-                if (Build.VERSION.SDK_INT <= 19) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
                     // For API 19 and earlier, we need to manually force the
                     // action bar to generate a new content description.
                     actionBar.setSubtitle(actionBar.getSubtitle());

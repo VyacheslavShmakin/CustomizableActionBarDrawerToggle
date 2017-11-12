@@ -522,11 +522,7 @@ public class ActionBarDrawerToggle implements DrawerLayout.DrawerListener {
      */
     @Override
     public void onDrawerSlide(View drawerView, float slideOffset) {
-        if (mDrawerSlideAnimationEnabled) {
-            setPosition(slideOffset);
-        } else {
-            setPosition(SLIDER_START_POSITION); // disable animation.
-        }
+        setPosition(mDrawerSlideAnimationEnabled ? slideOffset : SLIDER_START_POSITION);
     }
 
     /**
